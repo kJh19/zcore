@@ -1,0 +1,17 @@
+include "p3at.inc"
+include "floorplan.inc"
+
+name                    "Navigation-2D Tutorial"
+interval_sim            100
+quit_time                 0
+resolution                0.025
+show_clock                0
+show_clock_interval     100
+threads                 2
+
+# Put a single robot into the world
+pioneer3at
+(
+  name "robot"
+  pose [0 -2 0 45]
+)

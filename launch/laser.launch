@@ -1,0 +1,7 @@
+<launch>
+
+	<node name="urg_node" pkg="urg_node" type="urg_node" args="_serial_port:=/dev/ttyACM0">
+		<rosparam file="$(find nav2)/param/scan.yaml"/>
+	</node>
+
+</launch>

@@ -1,0 +1,50 @@
+<launch>
+
+	<!-- Some general parameters -->
+	<param name="use_sim_time" value="false" />
+	<rosparam file="$(find nav2)/param/ros.yaml"/>
+
+	<!-- Start Stage simulator with a given environment
+	<node name="talker" pkg="beginner_tutorials" type="talker"/>-->
+
+	<node name="serial_node" pkg="rosserial_python" type="serial_node.py" args="/dev/ttyACM0">
+		<param name="port" value="/dev/ttyACM0"/>
+		<param name="baud" value="57600"/>
+	</node>
+	<!--<node name="urg_node" pkg="urg_node" type="urg_node" args="_serial_port:=/dev/ttyACM0">
+		<remap from="scan" to="base_scan"/>
+		<rosparam file="$(find nav2)/param/scan.yaml"/>
+		<param name="calibrate_time" value="true"/>
+	</node>-->
+
+	<node pkg="tf" type="static_transform_publisher" name="link3_broadcaster" args="0 0 0 0 0 0 1 footrest_link base_laser_link 100" />
+
+
+	<!-- Start the Operator to control the simulated robot -->
+	<node name="Operator" pkg="nav2d_operator" type="operator" >
+		<rosparam file="$(find nav2)/param/operator.yaml"/>
+		<rosparam file="$(find nav2)/param/costmap.yaml" ns="local_map" />
+	</node>
+
+	<!-- Start Mapper to generate map from laser scans -->
+	<node name="Mapper" pkg="nav2d_karto" type="mapper">
+		<rosparam file="$(find nav2)/param/mapper.yaml"/>
+	</node>
+
+	<!-- Start the Navigator to move the robot autonomously-->
+	<node name="Navigator" pkg="nav2d_navigator" type="navigator">
+		<rosparam file="$(find nav2)/param/navigator.yaml"/>
+	</node>
+
+	<node name="GetMap" pkg="nav2d_navigator" type="get_map_client" />
+	<node name="Explore" pkg="nav2d_navigator" type="explore_client" />
+	<node name="SetGoal" pkg="nav2d_navigator" type="set_goal_client" />
+
+	<!-- Start the joystick-driver and remote-controller for operation
+	<node name="Joystick" pkg="joy" type="joy_node" />
+	<node name="Remote" pkg="nav2d_remote" type="remote_joy" />-->
+
+	<!-- RVIZ to view the visualization -->
+	<node name="RVIZ" pkg="rviz" type="rviz" args=" -d $(find nav2)/param/Hokuyo.rviz" />
+
+</launch>
