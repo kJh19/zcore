@@ -1,0 +1,56 @@
+<launch>
+
+	<!-- Some general parameters -->
+	<param name="use_sim_time" value="false" />
+	<rosparam file="$(find zcore)/param/ros.yaml"/>
+
+	<!-- Start laser-->
+	<node name="urg_node" pkg="urg_node" type="urg_node" output="screen">
+    	    <param name="ip_address" value=""/>
+    	    <param name="serial_port" value="/dev/ttyACM0"/>
+    	    <param name="serial_baud" value="115200"/>
+	    <param name="frame_id" value="base_laser_link"/>
+	    <param name="calibrate_time" value="true"/>
+    	    <param name="publish_intensity" value="false"/>
+            <param name="publish_multiecho" value="false"/>
+    	    <param name="angle_min" value="-1.309"/>
+    	    <param name="angle_max" value="1.309"/>
+  	</node>	
+
+    	<!-- Spublish some links-->
+	<node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="0.13 0 0 0 0 0 1 footrest_link base_laser_link 100" />
+	<node pkg="tf" type="static_transform_publisher" name="link2_broadcaster" args="0.3 0 0 0 0 0 1 base_footprint center 100" />
+
+
+	<!-- Start the Operator to control the simulated robot -->
+	<node name="Operator" pkg="nav2d_operator" type="operator" >
+		<rosparam file="$(find zcore)/param/operator.yaml"/>
+		<rosparam file="$(find zcore)/param/costmap.yaml" ns="local_map" />
+	</node>
+
+	<!-- Start Mapper to generate map from laser scans -->
+	<node name="Mapper" pkg="nav2d_karto" type="mapper">
+		<rosparam file="$(find zcore)/param/mapper.yaml"/>
+	</node>
+
+	<!-- ROS_WHILL -->
+	<arg name="model" default="$(find ros_whill)/modelc.urdf" />
+	<arg name="gui" default="true" />
+    		<param name="robot_description" textfile="$(arg model)" />
+    	
+	<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+        	<remap from="/joint_states" to="/whill/states/jointState" />
+    	</node>
+
+    	<arg name="serialport" default="$(env TTY_WHILL)"/>
+
+    	<node pkg="ros_whill" type="whill_modelc_controller" name="whill_modelc_controller" output="screen">
+        	<param name="serialport" value="$(arg serialport)"/>
+    	</node>
+    
+    	<node pkg="ros_whill" type="whill_modelc_publisher" name="whill_modelc_publisher" output="screen" >
+        	<param name="wheel_radius" value="0.135"/>
+        	<param name="serialport" value="$(arg serialport)"/>
+    	</node>
+
+</launch>
